@@ -1,4 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # Given an integer array nums, move all 0s to the end of the array while maintaining the relative order of the non-zero elements.
 
