@@ -1,4 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # What is the best way to call an API from another service ? What are the steps you need to take care of while you are integrating your service to external and internal services ? Do you see any security steps you need to take care about ?
 
