@@ -1,6 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-# How does the bean lifecycle work? Explain all
+# How does the bean lifecycle work? Explain all?
 
 Sure, let me first clarify the problem and then walk you through my approach.
 
@@ -40,23 +40,23 @@ I will specifically highlight the role of **BeanPostProcessors**, as that is the
 ```mermaid
 flowchart TD
     subgraph "Phase 1: Instantiation & Injection"
-        A[1. Instantiate Bean<br>(Constructor Call)] --> B[2. Populate Properties<br>(Dependency Injection)]
+        A["1. Instantiate Bean<br>(Constructor Call)"] --> B["2. Populate Properties<br>(Dependency Injection)"]
     end
 
     subgraph "Phase 2: Awareness"
-        B --> C[3. Call Aware Interfaces<br>(BeanNameAware, BeanFactoryAware)]
+        B --> C["3. Call Aware Interfaces<br>(BeanNameAware, BeanFactoryAware)"]
     end
 
     subgraph "Phase 3: Initialization"
-        C --> D[4. BeanPostProcessor<br>postProcessBeforeInitialization]
-        D --> E[5. Initialization Callbacks<br>(@PostConstruct, afterPropertiesSet)]
-        E --> F[6. BeanPostProcessor<br>postProcessAfterInitialization<br>(AOP Proxies created here)]
+        C --> D["4. BeanPostProcessor<br>postProcessBeforeInitialization"]
+        D --> E["5. Initialization Callbacks<br>(@PostConstruct, afterPropertiesSet)"]
+        E --> F["6. BeanPostProcessor<br>postProcessAfterInitialization<br>(AOP Proxies created here)"]
     end
 
     subgraph "Phase 4: Ready & Destruction"
-        F --> G[Bean Ready for Use]
-        G --> H[Container Shutdown]
-        H --> I[7. Destruction Callbacks<br>(@PreDestroy, DisposableBean)]
+        F --> G["Bean Ready for Use"]
+        G --> H["Container Shutdown"]
+        H --> I["7. Destruction Callbacks<br>(@PreDestroy, DisposableBean)"]
     end
 
     style D fill:#f9f,stroke:#333
@@ -192,23 +192,23 @@ Finally, when the context closes, we trigger the Destruction callbacks to close 
 
 <div align="center">⁂</div>
 
-[^1]: https://docs.spring.io/spring-kafka/reference/streams.html
+[^1]: https://www.geeksforgeeks.org/java/bean-life-cycle-in-java-spring/
 
-[^2]: https://developer.confluent.io/courses/spring/process-messages-with-kafka-streams/
+[^2]: https://www.youtube.com/watch?v=DVWH_xA7Z0w
 
-[^3]: https://www.baeldung.com/spring-boot-kafka-streams
+[^3]: https://bootcamptoprod.com/spring-bean-life-cycle-explained/
 
-[^4]: https://docs.spring.io/spring-boot/reference/messaging/kafka.html
+[^4]: https://www.upgrad.com/blog/spring-bean-life-cycle-explained/
 
-[^5]: https://www.spring-doc.cn/spring-kafka/3.1.9/streams.en.html
+[^5]: https://www.tutorialspoint.com/spring/spring_bean_life_cycle.htm
 
-[^6]: https://stackoverflow.com/questions/55305162/spring-kafka-bean-return-types
+[^6]: https://howtodoinjava.com/spring-core/spring-bean-life-cycle/
 
-[^7]: https://kafka.apache.org/41/streams/core-concepts/
+[^7]: https://springframework.guru/spring-bean-lifecycle/
 
-[^8]: https://www.geeksforgeeks.org/advance-java/spring-boot-integrate-with-apache-kafka-for-streaming/
+[^8]: https://docs.spring.io/spring-framework/reference/core/beans/factory-nature.html
 
-[^9]: https://dev.to/olymahmud/simplifying-kafka-with-spring-boot-3-and-cloud-stream-1p6
+[^9]: https://www.digitalocean.com/community/tutorials/spring-bean-life-cycle
 
-[^10]: https://www.slideshare.net/slideshow/event-streaming-with-kafka-streams-and-spring-cloud-stream-soby-chacko-vmware/250323138
+[^10]: https://dev.to/realnamehidden1_61/what-is-the-spring-bean-lifecycle-2ekf
 
