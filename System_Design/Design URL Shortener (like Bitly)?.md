@@ -54,7 +54,7 @@ flowchart TD
         KGS -->|Return ID: 1001| API
         API -->|Convert 1001 -> 'g7'| Logic["Base62 Encoder"]
         Logic --> DB_W[("Database (Primary)")]
-        DB_W -->|Save: {id: g7, url: google.com}| DB_W
+        DB_W -->|"Save: {id: g7, url: google.com}"| DB_W
     end
 
     subgraph "Read Path (Redirect)"
@@ -62,7 +62,7 @@ flowchart TD
         LB -->|Check Cache| Cache["Redis Cache"]
         Cache -->|Hit: google.com| User2
         Cache -.->|Miss| ReadAPI["API Service"]
-        ReadAPI -->|Select * where short='g7'| DB_R[("Database (Replica)")]
+        ReadAPI -->|"Select * where short='g7'"| DB_R[("Database (Replica)")]
         DB_R -->|Return Long URL| ReadAPI
         ReadAPI -->|302 Redirect| User2
     end
@@ -206,9 +206,9 @@ The system then becomes a simple wrapper around a **Distributed ID Generator**. 
 
 <div align="center">⁂</div>
 
-[^1]: https://blog.algomaster.io/p/design-a-url-shortener
+[^1]: https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly
 
-[^2]: https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly
+[^2]: https://blog.algomaster.io/p/design-a-url-shortener
 
 [^3]: https://www.youtube.com/watch?v=qSJAvd5Mgio
 
@@ -224,13 +224,13 @@ The system then becomes a simple wrapper around a **Distributed ID Generator**. 
 
 [^9]: https://www.linkedin.com/posts/jayant-aggarwal-418910248_remember-those-short-tinyurl-urls-ever-activity-7417197682689003520-Xj6j
 
-[^10]: https://www.linkedin.com/pulse/building-url-shortener-using-hash-functions-base62-conversion-singh-y01oc
+[^10]: https://www.w3resource.com/projects/python/python-url-shortener-project.php
 
-[^11]: https://www.systemdesignhandbook.com/guides/design-bitly/
+[^11]: https://algomaster.io/learn/system-design-interviews/design-url-shortener
 
 [^12]: https://bytebytego.com/courses/system-design-interview/design-a-url-shortener
 
-[^13]: https://www.kerstner.at/2012/07/shortening-strings-using-base-62-encoding/
+[^13]: https://www.linkedin.com/pulse/building-url-shortener-using-hash-functions-base62-conversion-singh-y01oc
 
 [^14]: https://www.youtube.com/watch?v=xFeWVugaouk
 
