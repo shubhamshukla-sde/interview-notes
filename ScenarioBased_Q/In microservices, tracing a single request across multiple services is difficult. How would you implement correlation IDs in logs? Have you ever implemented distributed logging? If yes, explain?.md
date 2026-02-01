@@ -1,4 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # In microservices, tracing a single request across multiple services is difficult. How would you implement correlation IDs in logs? Have you ever implemented distributed logging? If yes, explain?
 
