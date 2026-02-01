@@ -1,6 +1,14 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-# What is Apache Kafka, and what are its core components?
+# fix this error and send me full correct response ?
+
+Unable to render rich display
+Parse error on line 8:
+...A<br>Partition 0<br>(Leader)] en
+-----------------------^
+Expecting 'SQE', 'DOUBLECIRCLEEND', 'PE', '-)', 'STADIUMEND', 'SUBROUTINEEND', 'PIPE', 'CYLINDEREND', 'DIAMOND_STOP', 'TAGEND', 'TRAPEND', 'INVTRAPEND', 'UNICODE_TEXT', 'TEXT', 'TAGSTART', got 'PS'
+
+For more information, see [https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams\#creating-mermaid-diagrams](https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams#creating-mermaid-diagrams)
 
 Sure, let me first clarify the problem and then walk you through my approach.
 
@@ -12,7 +20,7 @@ It’s an event streaming platform designed for high throughput and fault tolera
 
 ## 2. Problem Understanding and Clarification
 
-The interviewer is asking for a fundamental definition of Kafka and its components.
+The interviewer is asking for a fundamental definition of Apache Kafka and its components.
 To answer this at a senior level, I shouldn't just list definitions. I need to explain *how* they work together to achieve scalability.
 
 **Key Concepts to Cover:**
@@ -49,27 +57,27 @@ This diagram shows how a **Topic** is split into **Partitions** across multiple 
 ```mermaid
 flowchart TD
     subgraph "Producer Layer"
-        P[Producer App]
+        P["Producer App"]
     end
 
     subgraph "Kafka Cluster"
         subgraph "Broker 1"
-            T1P0[Topic A<br>Partition 0<br>(Leader)]
+            T1P0["Topic A<br>Partition 0<br>(Leader)"]
         end
         
         subgraph "Broker 2"
-            T1P1[Topic A<br>Partition 1<br>(Leader)]
+            T1P1["Topic A<br>Partition 1<br>(Leader)"]
         end
         
         subgraph "Broker 3"
-            T1P2[Topic A<br>Partition 2<br>(Leader)]
+            T1P2["Topic A<br>Partition 2<br>(Leader)"]
         end
     end
 
     subgraph "Consumer Group (Order Service)"
-        C1[Consumer Instance 1]
-        C2[Consumer Instance 2]
-        C3[Consumer Instance 3]
+        C1["Consumer Instance 1"]
+        C2["Consumer Instance 2"]
+        C3["Consumer Instance 3"]
     end
 
     P -->|Round Robin / Key Hash| T1P0
@@ -200,27 +208,4 @@ In a **Log Aggregation System** (ELK Stack pipeline):
 * **The Problem:** During Black Friday, our logging service (Logstash) crashed because the HTTP traffic spiked 50x.
 * **The Kafka Fix:** We put Kafka in the middle. The Application Servers pushed logs to Kafka (fast, async). Logstash pulled from Kafka.
 * **Result:** When traffic spiked, Kafka absorbed the 1GB/sec write load (Store-and-Forward). Logstash continued indexing at its max speed of 100MB/sec. The logs were delayed by 10 minutes, but **no logs were lost** and the app servers didn't crash. This is "Backpressure" in action.
-<span style="display:none">[^1][^10][^2][^3][^4][^5][^6][^7][^8][^9]</span>
-
-<div align="center">⁂</div>
-
-[^1]: https://www.geeksforgeeks.org/apache-kafka/kafka-architecture/
-
-[^2]: https://www.instaclustr.com/education/apache-kafka/apache-kafka-architecture-a-complete-guide-2025/
-
-[^3]: https://developer.confluent.io/courses/architecture/get-started/
-
-[^4]: https://www.redpanda.com/guides/kafka-architecture
-
-[^5]: https://blog.miraclesoft.com/navigating-apache-kafka-a-overview-of-architecture-and-components/
-
-[^6]: https://www.instaclustr.com/education/apache-kafka/apache-kafka-cluster-key-components-and-building-your-first-cluster/
-
-[^7]: https://github.com/AutoMQ/automq/wiki/Kafka-Architecture:-Concept-\&-Components
-
-[^8]: https://www.site24x7.com/learn/apache-kafka-architecture.html
-
-[^9]: https://www.projectpro.io/article/apache-kafka-architecture-/442
-
-[^10]: https://www.youtube.com/watch?v=IsgRatCefVc
 
