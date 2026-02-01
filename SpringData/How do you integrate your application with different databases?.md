@@ -1,14 +1,14 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-# How do you integrate your application with different databases ?
+# How do you integrate your application with different databases?
 
 Sure, let me first clarify the problem and then walk you through my approach.
 
 ## 1. Interview-Style Opening
 
-"Integrating a single application with multiple databases is a common requirement in modern architectures, especially when dealing with legacy systems or separating 'write-heavy' transactional data from 'read-heavy' reporting data.
+"Integrating a single application with multiple databases is a common requirement in modern architectures, especially when separating 'write-heavy' transactional data from 'read-heavy' reporting data.
 
-In a Spring Boot environment, the default auto-configuration works great for a single DataSource. To support multiple databases (like a MySQL for transactions and a Postgres for analytics), we have to disable the default auto-configuration and manually define multiple **DataSource**, **EntityManagerFactory**, and **TransactionManager** beans. I usually structure this by isolating each database configuration into its own package."
+In a Spring Boot environment, the default auto-configuration handles a single DataSource seamlessly. However, to support multiple databases (like MySQL for transactions and Postgres for analytics), we need to bypass the default auto-configuration. I approach this by manually defining beans for **DataSource**, **EntityManagerFactory**, and **TransactionManager** for each database, and crucially, isolating them via package scanning."
 
 ## 2. Problem Understanding and Clarification
 
@@ -40,26 +40,26 @@ The solution revolves around **Package-Level Isolation**.
 ```mermaid
 flowchart TD
     subgraph "Spring Boot Application"
-        App[Application Logic]
+        App["Application Logic"]
         
         subgraph "Primary Config"
-            DS1[Primary DataSource<br>(MySQL)]
-            EM1[Primary EntityManager]
-            TM1[Primary TxManager]
-            Repo1[Package: com.app.orders]
+            DS1["Primary DataSource<br>(MySQL)"]
+            EM1["Primary EntityManager"]
+            TM1["Primary TxManager"]
+            Repo1["Package: com.app.orders"]
         end
         
         subgraph "Secondary Config"
-            DS2[Secondary DataSource<br>(Postgres)]
-            EM2[Secondary EntityManager]
-            TM2[Secondary TxManager]
-            Repo2[Package: com.app.analytics]
+            DS2["Secondary DataSource<br>(Postgres)"]
+            EM2["Secondary EntityManager"]
+            TM2["Secondary TxManager"]
+            Repo2["Package: com.app.analytics"]
         end
     end
 
     subgraph "External Databases"
-        MySQL[(MySQL DB)]
-        Postgres[(Postgres DB)]
+        MySQL[("MySQL DB")]
+        Postgres[("Postgres DB")]
     end
 
     App --> Repo1
@@ -227,31 +227,31 @@ The main trade-off is **Distributed Transaction Complexity**. If you need strict
 
 [^1]: https://stackoverflow.com/questions/30337582/spring-boot-configure-and-use-two-data-sources
 
-[^2]: https://www.geeksforgeeks.org/advance-java/configure-multiple-datasource-in-spring-boot-application/
+[^2]: https://www.youtube.com/watch?v=z65J3JPbs9A
 
-[^3]: https://www.youtube.com/watch?v=z65J3JPbs9A
+[^3]: https://www.geeksforgeeks.org/advance-java/configure-multiple-datasource-in-spring-boot-application/
 
-[^4]: https://www.baeldung.com/spring-data-jpa-multiple-databases
+[^4]: https://stackademic.com/blog/connecting-multiple-databases-in-spring-boot
 
-[^5]: https://www.reddit.com/r/SpringBoot/comments/1p5sqtc/multi_databases_in_spring_boot/
+[^5]: https://www.linkedin.com/pulse/connecting-using-multiple-databases-single-spring-boot-kāshān-asim-kszmf
 
-[^6]: https://dev.to/antozanini/how-to-set-up-multiple-datasources-in-spring-boot-3-4089
+[^6]: https://www.youtube.com/watch?v=13ffY7vI8z4
 
-[^7]: https://stackoverflow.com/questions/44373186/how-to-use-hikaricp-in-spring-boot-with-two-datasources-in-conjunction-with-flyw
+[^7]: https://www.geeksforgeeks.org/java/how-to-handle-connection-pooling-in-jdbc-in-java/
 
 [^8]: https://www.youtube.com/watch?v=mIFIb_JE47U
 
-[^9]: https://www.youtube.com/watch?v=huaXMckKkyA
+[^9]: https://dev.to/antozanini/how-to-set-up-multiple-datasources-in-spring-boot-3-4089
 
-[^10]: https://www.youtube.com/watch?v=17Xl01CcZUM
+[^10]: https://coderstea.in/post/java/how-to-create-a-multi-database-pool-in-hikaricp/
 
-[^11]: https://stackademic.com/blog/connecting-multiple-databases-in-spring-boot
+[^11]: https://www.innovationm.com/blog/managing-multiple-databases-in-a-monolithic-spring-boot-app-using-jpa-a-beginners-guide/
 
-[^12]: https://oneuptime.com/blog/post/2025-12-22-spring-boot-multiple-datasources/view
+[^12]: https://www.codingeasypeasy.com/blog/spring-boot-configuring-multiple-data-sources-mysql-and-postgresql-complete-guide
 
 [^13]: https://stackoverflow.com/questions/60547923/hikaricp-multiple-datasources-only-primary-datasources-pool-started-spring
 
-[^14]: https://www.innovationm.com/blog/managing-multiple-databases-in-a-monolithic-spring-boot-app-using-jpa-a-beginners-guide/
+[^14]: https://www.youtube.com/watch?v=mUIEM3x12es
 
-[^15]: https://docs.spring.io/spring-boot/how-to/data-access.html
+[^15]: https://javageeksociety.blogspot.com/2024/10/configuring-multiple-datasources-in.html
 
