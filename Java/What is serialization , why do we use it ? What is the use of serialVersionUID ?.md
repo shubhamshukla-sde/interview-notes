@@ -1,4 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # What is serialization , why do we use it ? What is the use of serialVersionUID ?
 
