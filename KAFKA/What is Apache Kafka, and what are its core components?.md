@@ -1,14 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
-# fix this error and send me full correct response ?
-
-Unable to render rich display
-Parse error on line 8:
-...A<br>Partition 0<br>(Leader)] en
------------------------^
-Expecting 'SQE', 'DOUBLECIRCLEEND', 'PE', '-)', 'STADIUMEND', 'SUBROUTINEEND', 'PIPE', 'CYLINDEREND', 'DIAMOND_STOP', 'TAGEND', 'TRAPEND', 'INVTRAPEND', 'UNICODE_TEXT', 'TEXT', 'TAGSTART', got 'PS'
-
-For more information, see [https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams\#creating-mermaid-diagrams](https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams#creating-mermaid-diagrams)
+# What is Apache Kafka, and what are its core components?
 
 Sure, let me first clarify the problem and then walk you through my approach.
 
@@ -97,7 +89,7 @@ flowchart TD
 
 * **Partitions are key:** Notice `Topic A` isn't in one place. It's split into `P0`, `P1`, `P2`.
 * **Parallelism:** Because there are 3 partitions, we can have 3 consumers (`C1`, `C2`, `C3`) reading simultaneously. If `Topic A` had only 1 partition, `C2` and `C3` would sit idle.
-* **Broker Distribution:** Ideally, partitions are spread across different brokers to prevent a single server failure from taking down the whole topic.
+* **Broker Distribution:** Ideally, partitions are spread across different brokers to prevent a single server failure from taking down the whole topic.[^1]
 
 
 ## 5. Java Code (Production-Quality)
@@ -159,7 +151,7 @@ public class KafkaComponentsDemo {
 * `BOOTSTRAP_SERVERS_CONFIG`: We list multiple brokers. The client connects to one, discovers the full cluster metadata (which broker holds which partition), and then connects directly to the correct leaders.
 * `StringSerializer`: Kafka is agnostic to data types. It stores byte arrays. The component responsible for this translation is the Serializer.
 * `ACKS_CONFIG`: This setting dictates durability. `acks=0` (fire and forget), `acks=1` (leader only), `acks=all` (quorum).
-* `ProducerRecord(topic, key, value)`: The **Key** is crucial. Kafka uses the formula `hash(key) % num_partitions` to decide which partition gets the message. This ensures all events for `order-101` land in the same partition and are processed in order.
+* `ProducerRecord(topic, key, value)`: The **Key** is crucial. Kafka uses the formula `hash(key) % num_partitions` to decide which partition gets the message. This ensures all events for `order-101` land in the same partition and are processed in order.[^2]
 
 
 ## 7. How I Would Explain This to the Interviewer
@@ -168,11 +160,11 @@ public class KafkaComponentsDemo {
 
 When I explain 'Components', I always start with the **Topic**. It's the logical bucket. But the physical reality is the **Partition**.
 The **Partition** is the unit of scalability. If I want to double my throughput, I double my partitions.
-The **Broker** is just the hardware that holds these partitions.
+The **Broker** is just the hardware that holds these partitions.[^3]
 The **Producer** decides *which* partition gets data (usually via a Key).
-And the **Consumer Group** is the mechanism that allows us to have 50 instances of a microservice reading from a topic without stepping on each other's toes—Kafka assigns each instance a unique slice of the partitions.
+And the **Consumer Group** is the mechanism that allows us to have 50 instances of a microservice reading from a topic without stepping on each other's toes—Kafka assigns each instance a unique slice of the partitions.[^4][^1]
 
-Finally, there's **Zookeeper** (or KRaft now), which is the traffic cop keeping track of who is the 'Leader' for each partition."
+Finally, there's **Zookeeper** (or KRaft now), which is the traffic cop keeping track of who is the 'Leader' for each partition."[^5]
 
 ## 8. Edge Cases and Follow-Up Questions
 
@@ -207,5 +199,38 @@ In a **Log Aggregation System** (ELK Stack pipeline):
 
 * **The Problem:** During Black Friday, our logging service (Logstash) crashed because the HTTP traffic spiked 50x.
 * **The Kafka Fix:** We put Kafka in the middle. The Application Servers pushed logs to Kafka (fast, async). Logstash pulled from Kafka.
-* **Result:** When traffic spiked, Kafka absorbed the 1GB/sec write load (Store-and-Forward). Logstash continued indexing at its max speed of 100MB/sec. The logs were delayed by 10 minutes, but **no logs were lost** and the app servers didn't crash. This is "Backpressure" in action.
+* **Result:** When traffic spiked, Kafka absorbed the 1GB/sec write load (Store-and-Forward). Logstash continued indexing at its max speed of 100MB/sec. The logs were delayed by 10 minutes, but **no logs were lost** and the app servers didn't crash. This is "Backpressure" in action.[^3]
+<span style="display:none">[^10][^11][^12][^13][^14][^15][^6][^7][^8][^9]</span>
+
+<div align="center">⁂</div>
+
+[^1]: https://stackoverflow.com/questions/38024514/understanding-kafka-topics-and-partitions
+
+[^2]: https://www.redpanda.com/guides/kafka-architecture
+
+[^3]: https://www.geeksforgeeks.org/apache-kafka/kafka-architecture/
+
+[^4]: https://conduktor.io/glossary/kafka-consumer-groups-explained
+
+[^5]: https://kafka.apache.org/41/getting-started/zk2kraft/
+
+[^6]: https://www.instaclustr.com/education/apache-kafka/apache-kafka-architecture-a-complete-guide-2025/
+
+[^7]: https://developer.confluent.io/courses/architecture/get-started/
+
+[^8]: https://www.interviewbit.com/blog/kafka-architecture/
+
+[^9]: https://github.com/AutoMQ/automq/wiki/Kafka-Architecture:-Concept-\&-Components
+
+[^10]: https://kafka.apache.org/40/documentation/zk2kraft.html
+
+[^11]: https://hackernoon.com/apache-kafka-architecture-101-internal-components-and-how-they-work-together
+
+[^12]: https://www.reddit.com/r/apachekafka/comments/16lzlih/in_apache_kafka_if_you_have_2_partitions_and_2/
+
+[^13]: https://www.redpanda.com/blog/migration-apache-zookeeper-kafka-kraft
+
+[^14]: https://dev.to/luxdevhq/the-ultimate-guide-to-apache-kafka-31ce
+
+[^15]: https://www.redpanda.com/guides/kafka-tutorial-kafka-partition-strategy
 
