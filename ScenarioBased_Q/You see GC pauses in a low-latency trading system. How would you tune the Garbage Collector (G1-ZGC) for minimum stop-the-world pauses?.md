@@ -1,4 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # You see GC pauses in a low-latency trading system. How would you tune the Garbage Collector (G1:ZGC) for minimum stop-the-world pauses?
 
