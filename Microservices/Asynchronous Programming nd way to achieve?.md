@@ -1,5 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
-
 ## 1. Interview-Style Opening
 
 "Asynchronous programming is a concurrency model that allows a unit of work to run separately from the main application thread. This ensures the main thread—typically the one handling HTTP requests in a web server—isn't blocked waiting for long-running operations like I/O, database queries, or external API calls.
