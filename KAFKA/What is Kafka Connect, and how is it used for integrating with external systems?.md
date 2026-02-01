@@ -50,15 +50,15 @@ The architecture is plugin-based.
 ```mermaid
 flowchart LR
     subgraph "External Source"
-        DB[(MySQL Database)]
+        DB[("MySQL Database")]
     end
 
     subgraph "Kafka Connect Cluster"
-        Worker1[Worker Node 1]
-        Worker2[Worker Node 2]
+        Worker1["Worker Node 1"]
+        Worker2["Worker Node 2"]
         
-        SourceTask[Source Task<br>(JDBC Source)]
-        SinkTask[Sink Task<br>(S3 Sink)]
+        SourceTask["Source Task<br>(JDBC Source)"]
+        SinkTask["Sink Task<br>(S3 Sink)"]
         
         Worker1 -- Runs --> SourceTask
         Worker2 -- Runs --> SinkTask
@@ -69,7 +69,7 @@ flowchart LR
     end
 
     subgraph "External Destination"
-        S3[(AWS S3 Bucket)]
+        S3[("AWS S3 Bucket")]
     end
 
     DB -- "1. Pulls Rows" --> SourceTask
@@ -153,12 +153,12 @@ And here is how you dump that same data into Elasticsearch for searching.
 **Source Config:**
 
 * `connector.class`: Tells the worker which jar file to load.
-* `mode`: "timestamp" means "SELECT * FROM users WHERE updated_at > last_offset". This is how it simulates a stream from a static table.
+* `mode`: "timestamp" means "SELECT * FROM users WHERE updated_at > last_offset". This is how it simulates a stream from a static table.[^5]
 * `topic.prefix`: The data will land in `pg-users`.
 
 **Sink Config:**
 
-* `tasks.max`: "2" means we can run parallel threads. If the topic has 2 partitions, both threads will work.
+* `tasks.max`: "2" means we can run parallel threads. If the topic has 2 partitions, both threads will work.[^5]
 * `errors.tolerance`: "all". This is critical in production. Without this, one bad JSON record (e.g., a schema mismatch) will crash the connector and stop the pipeline. This setting sends bad data to a separate `dlq` topic so you can fix it later.
 
 
@@ -168,12 +168,12 @@ And here is how you dump that same data into Elasticsearch for searching.
 
 Kafka Connect is the **integration layer**. It consists of a cluster of 'Workers'. These workers are just empty containers waiting for instructions.
 We send them a JSON payload via REST API that says 'Start a MySQL Source Task'.
-The worker spawns that task, which begins polling MySQL and writing to Kafka.
+The worker spawns that task, which begins polling MySQL and writing to Kafka.[^3]
 
 The beauty is that Kafka Connect handles the hard parts of distributed systems:
 
-1. **Scale:** If I need more throughput, I just change `"tasks.max": "10"` and the cluster spreads the load.
-2. **Resilience:** If a worker node dies, the cluster detects it and moves the tasks to a healthy node automatically.
+1. **Scale:** If I need more throughput, I just change `"tasks.max": "10"` and the cluster spreads the load.[^3]
+2. **Resilience:** If a worker node dies, the cluster detects it and moves the tasks to a healthy node automatically.[^6]
 3. **Schema Evolution:** By plugging in the Avro Converter, we ensure that if the DB schema changes, the downstream consumers don't break immediately."
 
 ## 8. Edge Cases and Follow-Up Questions
@@ -193,7 +193,7 @@ The beauty is that Kafka Connect handles the hard parts of distributed systems:
 
 | Feature | Custom Code (Producer) | Kafka Connect |
 | :-- | :-- | :-- |
-| **Development Time** | High (Days/Weeks) | Low (Minutes) |
+| **Development Time** | High (Days/Weeks) | Low (Minutes) [^5] |
 | **Maintenance** | High (Libraries, Bugs) | Low (Config only) |
 | **Flexibility** | 100% (Do anything) | constrained by Plugin logic |
 | **Deployment** | Embedded in App | Separate Cluster infrastructure |
@@ -208,7 +208,7 @@ The beauty is that Kafka Connect handles the hard parts of distributed systems:
 *   **Solution:** We used the **Debezium Source Connector** for DB2.
 *   **Flow:** The connector read the transaction logs (CDC) and pushed changes to Kafka.
 *   **Result:** All new microservices (Fraud Detection, Mobile App) consumed from Kafka. They never touched the Mainframe. We reduced MIPS costs by 40% and enabled real-time fraud alerts.
-<span style="display:none">[^1][^10][^2][^3][^4][^5][^6][^7][^8][^9]</span>
+<span style="display:none">[^1][^10][^2][^4][^7][^8][^9]</span>
 
 <div align="center">⁂</div>
 
@@ -218,13 +218,13 @@ The beauty is that Kafka Connect handles the hard parts of distributed systems:
 
 [^3]: https://www.instaclustr.com/education/apache-kafka/apache-kafka-connect-the-basics-and-a-quick-tutorial/
 
-[^4]: https://docs.confluent.io/platform/current/connect/index.html
+[^4]: https://www.openlogic.com/blog/exploring-kafka-connect
 
-[^5]: https://www.openlogic.com/blog/exploring-kafka-connect
+[^5]: https://www.automq.com/blog/kafka-connect-architecture-concepts-best-practices
 
-[^6]: https://www.automq.com/blog/kafka-connect-architecture-concepts-best-practices
+[^6]: https://kafka.apache.org/41/kafka-connect/overview/
 
-[^7]: https://kafka.apache.org/41/kafka-connect/overview/
+[^7]: https://docs.confluent.io/platform/current/connect/index.html
 
 [^8]: https://docs.redhat.com/en/documentation/red_hat_streams_for_apache_kafka/2.7/html/streams_for_apache_kafka_on_openshift_overview/kafka-connect-components_str
 
