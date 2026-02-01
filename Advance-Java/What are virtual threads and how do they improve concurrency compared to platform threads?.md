@@ -37,26 +37,26 @@ I will contrast the two models:
 ```mermaid
 flowchart TD
     subgraph "Platform Thread Model (Old)"
-        PT1[Java Thread 1] --- OS1[OS Kernel Thread 1]
-        PT2[Java Thread 2] --- OS2[OS Kernel Thread 2]
+        PT1["Java Thread 1"] --- OS1["OS Kernel Thread 1"]
+        PT2["Java Thread 2"] --- OS2["OS Kernel Thread 2"]
         
-        OS1 --- CPU1[CPU Core 1]
-        OS2 --- CPU2[CPU Core 2]
+        OS1 --- CPU1["CPU Core 1"]
+        OS2 --- CPU2["CPU Core 2"]
     end
 
     subgraph "Virtual Thread Model (New)"
-        VT1[Virtual Thread 1]
-        VT2[Virtual Thread 2]
-        VT3[Virtual Thread 3]
-        VT4[Virtual Thread 4]
+        VT1["Virtual Thread 1"]
+        VT2["Virtual Thread 2"]
+        VT3["Virtual Thread 3"]
+        VT4["Virtual Thread 4"]
         
         subgraph "JVM Scheduler (ForkJoinPool)"
-            CT1[Carrier Thread 1<br>(Platform Thread)]
+            CT1["Carrier Thread 1<br>(Platform Thread)"]
         end
         
         VT1 -.->|Mounted| CT1
         VT2 -.->|Waiting (Unmounted)| CT1
-        CT1 --- CPU_New[CPU Core 1]
+        CT1 --- CPU_New["CPU Core 1"]
     end
 
     style CT1 fill:#f9f,stroke:#333
@@ -86,6 +86,7 @@ public class VirtualThreadDemo {
         long startTime = System.currentTimeMillis();
 
         // 1. Create a factory for Virtual Threads
+        // We use the new JDK 21 API 'Thread.ofVirtual()'
         ThreadFactory vThreadFactory = Thread.ofVirtual().name("vt-worker-", 0).factory();
 
         // 2. Try to run 100,000 concurrent tasks
@@ -99,9 +100,11 @@ public class VirtualThreadDemo {
                 executor.submit(() -> {
                     // Simulate blocking I/O (e.g., DB call)
                     try {
+                        // In Virtual Threads, sleep() does NOT block the OS thread.
+                        // It yields the carrier thread to another task.
                         Thread.sleep(Duration.ofMillis(500)); 
                     } catch (InterruptedException e) {
-                        // handle interruption
+                        Thread.currentThread().interrupt();
                     }
                     counter.incrementAndGet();
                 });
@@ -118,8 +121,8 @@ public class VirtualThreadDemo {
 ## 6. Code Walkthrough (Line-by-Line)
 
 * `Thread.ofVirtual().factory()`: This is the new API in JDK 21. It tells the JVM "Do not create OS threads for these".
-* `Executors.newThreadPerTaskExecutor(...)`: In the past, "Thread per Task" was an anti-pattern because threads were expensive. With Virtual Threads, it is now the **recommended pattern**. You don't need to pool them. You just create them and throw them away.
-* `Thread.sleep(500)`: This is the magic moment. In a Platform thread, this pauses the OS thread. In a Virtual Thread, the JVM detects the sleep, saves the stack frame to heap memory, and yields the carrier thread to another task.
+* `Executors.newThreadPerTaskExecutor(...)`: In the past, "Thread per Task" was an anti-pattern because threads were expensive. With Virtual Threads, it is now the **recommended pattern**. You don't need to pool them. You just create them and throw them away.[^6]
+* `Thread.sleep(500)`: This is the magic moment. In a Platform thread, this pauses the OS thread. In a Virtual Thread, the JVM detects the sleep, saves the stack frame to heap memory, and yields the carrier thread to another task.[^1]
 
 
 ## 7. How I Would Explain This to the Interviewer
@@ -127,7 +130,7 @@ public class VirtualThreadDemo {
 "Virtual Threads solve the **'Little's Law'** problem in high-throughput servers.
 Previously, if a request took 2 seconds (mostly waiting for DB), and we had 1000 OS threads, our max throughput was capped at 500 requests/sec. We simply ran out of threads.
 
-With Virtual Threads, the thread is virtually free (a few bytes of RAM). We can have 1,000,000 concurrent virtual threads. So, even if requests take 2 seconds, we can handle massive concurrency because the *waiting* threads don't consume *computing* resources (OS threads).
+With Virtual Threads, the thread is virtually free (a few bytes of RAM). We can have 1,000,000 concurrent virtual threads. So, even if requests take 2 seconds, we can handle massive concurrency because the *waiting* threads don't consume *computing* resources (OS threads).[^5]
 
 They allow us to write simple, synchronous style code (`code A; code B;`) that performs like complex asynchronous code (`CompletableFuture`), without the 'Callback Hell'."
 
@@ -135,22 +138,22 @@ They allow us to write simple, synchronous style code (`code A; code B;`) that p
 
 **Q: Can I use Virtual Threads for CPU-intensive tasks (e.g., Video Encoding)?**
 
-* *A:* **No.** Virtual Threads are excellent for *waiting* (I/O). If a thread is crunching numbers, it never yields the CPU. If you launch 1,000 virtual threads that act like `while(true)`, they will hog the few Carrier Threads, and the system will stall. Use Platform Threads for CPU-bound work.
+* *A:* **No.** Virtual Threads are excellent for *waiting* (I/O). If a thread is crunching numbers, it never yields the CPU. If you launch 1,000 virtual threads that act like `while(true)`, they will hog the few Carrier Threads, and the system will stall. Use Platform Threads for CPU-bound work.[^6]
 
 **Q: What is 'Pinning'?**
 
-* *A:* If you use `synchronized` blocks or native methods (JNI), the Virtual Thread gets "pinned" to the Carrier Thread. The JVM cannot unmount it during blocking operations. This negates the benefit. The solution is to use `ReentrantLock` instead of `synchronized` where possible.
+* *A:* If you use `synchronized` blocks or native methods (JNI), the Virtual Thread gets "pinned" to the Carrier Thread. The JVM cannot unmount it during blocking operations. This negates the benefit. The solution is to use `ReentrantLock` instead of `synchronized` where possible.[^7]
 
 
 ## 9. Optimization and Trade-offs
 
 | Feature | Platform Thread | Virtual Thread |
 | :-- | :-- | :-- |
-| **OS Resource** | 1 Kernel Thread | None (User Mode) |
-| **Stack Size** | ~1 MB (Reserved) | Resizeable (Starts small) |
+| **OS Resource** | 1 Kernel Thread | None (User Mode) [^3] |
+| **Stack Size** | ~1 MB (Reserved) | Resizeable (Starts small) [^5] |
 | **Context Switch** | Slow (Kernel Mode) | Fast (JVM / User Mode) |
 | **Best For** | CPU Heavy Tasks | I/O Heavy (Web Servers) |
-| **Pooling** | Mandatory (Thread Pool) | Anti-Pattern (Create new) |
+| **Pooling** | Mandatory (Thread Pool) | Anti-Pattern (Create new) [^2] |
 
 **Optimization:** "In Spring Boot 3.2, enabling this is literally one line in `application.yml`: `spring.threads.virtual.enabled=true`. This automatically switches Tomcat and Jetty to use virtual threads for incoming requests."
 
@@ -168,28 +171,28 @@ var orders = orderService.get();
 ```
 
 This code looks blocking, but under the hood, it runs in parallel effectively.
-* **Result:** The application throughput increased by **10x** for the same hardware, and the codebase became debuggable again because stack traces now point to the actual line of code, not some reactive framework internal.
-<span style="display:none">[^1][^10][^2][^3][^4][^5][^6][^7][^8][^9]</span>
+* **Result:** The application throughput increased by **10x** for the same hardware, and the codebase became debuggable again because stack traces now point to the actual line of code, not some reactive framework internal.[^8]
+<span style="display:none">[^10][^4][^9]</span>
 
 <div align="center">⁂</div>
 
-[^1]: https://stackoverflow.com/questions/78094984/difference-between-platform-thread-carrier-thread-and-virtual-thread-in-context
+[^1]: https://www.marcobehler.com/guides/java-project-loom
 
-[^2]: https://stackoverflow.com/questions/79130627/when-to-use-platform-threads-over-virtual-threads
+[^2]: https://developer.okta.com/blog/2022/08/26/state-of-java-project-loom
 
-[^3]: https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html
+[^3]: https://inside.java/2023/10/30/sip086/
 
-[^4]: https://blog.ycrash.io/an-investigative-study-virtual-threads-vs-platform-threads-in-java-23/
+[^4]: https://rockthejvm.com/articles/the-ultimate-guide-to-java-virtual-threads
 
-[^5]: https://www.baeldung.com/java-virtual-thread-vs-thread
+[^5]: https://www.reddit.com/r/java/comments/uiaie9/what_are_project_looms_virtual_thread_main/
 
-[^6]: https://www.alibabacloud.com/blog/exploration-of-java-virtual-threads-and-performance-analysis_601860
+[^6]: https://stackoverflow.com/questions/71945866/project-loom-why-are-virtual-threads-not-the-default
 
-[^7]: https://www.youtube.com/watch?v=0NtIcbSsjBc
+[^7]: https://www.youtube.com/watch?v=13EtTQbfW_E
 
-[^8]: https://dzone.com/articles/deep-dive-into-java-virtual-threads-a-game-changer
+[^8]: https://blog.jetbrains.com/idea/2025/12/thread-dumps-and-project-loom-virtual-threads/
 
-[^9]: https://www.youtube.com/watch?v=Supyrpu1Qz0
+[^9]: https://blogs.oracle.com/javamagazine/java-virtual-threads/
 
-[^10]: https://www.zymr.com/blog/threads-and-virtual-threads-demystifying-the-world-of-concurrency-in-modern-times
+[^10]: https://blogs.oracle.com/javamagazine/post/java-loom-virtual-threads-platform-threads
 
