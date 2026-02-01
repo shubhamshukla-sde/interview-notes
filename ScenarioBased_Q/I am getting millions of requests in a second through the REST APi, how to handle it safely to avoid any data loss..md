@@ -1,4 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # I am getting millions of requests in a second through the REST APi, how to handle it safely to avoid any data loss.
 
